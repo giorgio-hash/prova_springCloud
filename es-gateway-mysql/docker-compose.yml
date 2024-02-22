@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: gw_spring_app:latest
+    build: ./demo-gateway
+    container_name: gw
+    restart: on-failure
+    environment:
+      SERVER_ADDRESS: 0.0.0.0 #espone su tutte le porte TCP del proprio container
+      BACKEND_URI: app
+      SPRING_PROFILES_ACTIVE: docker #variabile non influente
+    depends_on:
+      - app
+    expose:
+      - "8081"
+    ports:
+      - "8081:8081"
+
+  app:
+    image: spring_app:latest
+    build: ./complete
+    container_name: app
+    restart: always
+    environment:
+      SERVER_ADDRESS: 0.0.0.0
+      MYSQL_HOST: db
+      SPRING_PROFILES_ACTIVE: docker #variabile non influente
+    depends_on:
+      db:
+        condition: service_healthy
+        #NECESSARIO! il database deve essere operativo prima dell'applicazione
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://app:8080/demo/all" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+
+  db:
+    image: mysql:latest
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: ThePassword
+      MYSQL_DATABASE: db_example
+      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-uroot","-proot"]
+      #test: il database fa ping a sè stesso per controllare se è operativo. Inizia dopo 20 secondi (altrimenti blocca l'init), riprova per 3 volte
+      retries: 3
+      interval: 10s
+      start_period: 20s
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-config:/etc/mysql/conf.d:ro
+      - db-users:/var/lib/mysql
+      #se decidessimo di salvare i volumi come cartelle di progetto:
+      #- "./conf.d:/etc/mysql/conf.d:ro"
+      #- "./db-users:/var/lib/mysql"
+
+
+#Docker decide dove salvare i seguenti volumi (ci sono zone apposite del filesystem del Docker framework)
+#i volumi sono artefatti Docker per lo storage permanente. Sono definibili e configurabili. Si possono esportare/importare e salvare su cloud. Non dipendono dall'architettura
+volumes:
+  db-config:
+    name: users-db-config
+  db-users:
+    name: users-db-data

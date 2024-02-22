@@ -1,0 +1,15 @@
+Fasi di sviluppo:
+
+1. sviluppo in locale, compilazione con Maven (o Gradle se preferisci?)
+
+2. Dockerizzazione: generazione dell'eseguibile .jar con Maven
+    -prima, specificare nel application.properties (o application.yml) l'interfaccia "0.0.0.0" per il server, anche attraverso variabile d'ambiente con operatore ternario (la variabile d'ambiente verrà successivamente impostata col docker-compose)
+    -poi, usa il comando ".\mvnw package" nella cartella radice del servizio (ad es. demo-gateway/, complete/)
+
+3. importazione dell'eseguibile .jar su immagine Docker
+    -crea un Dockerfile nella cartella radice del servizio
+    -specifica immagine di base, copia il .jar da target/ e specifica il comando entrypoint (vedi i Dockerfile)
+
+4. deployment con docker-compose
+    -il docker-compose sarà alla cartella radice del progetto
+    -nel docker-compose si imposteranno le variabili d'ambiente dei vari servizi

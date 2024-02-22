@@ -1,0 +1,16 @@
+N.B.: i test qui sono stati condotti con cURL su CMD, non PowerShell. La sintassi cambia un poco
+
+Per inserire una tupla, l'utente deve superare il filtro di autenticazione.
+Tale filtro (d'esempio) permette di far passare la richiesta solo se l'header "authorized" è "true".
+Con cURL:
+curl -v localhost:8081/add -d email=rumbix@gioggio.com -d name=rumba -H "authorized: true"
+( "-v" è opzionale, sta per "verbose". mostra i dettagli dell'interazione)
+
+Il gateway fa passare la richiesta verso la backend, la quale crea il nuovo utente.
+
+Si può controllare il database in qualità di root digitando su riga di comando:
+docker exec -it db mysql -uroot -proot
+
+Per visualizzare la richiesta non ci sono filtri impostati.
+con cURL:
+curl localhost:8081/all
