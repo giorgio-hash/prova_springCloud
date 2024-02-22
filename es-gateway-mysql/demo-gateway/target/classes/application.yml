@@ -1,0 +1,25 @@
+spring:
+    cloud:
+      gateway:
+        routes:
+          - id: proxy-route
+            uri: http://${BACKEND_URI:localhost}:8080  #per Docker
+            predicates:
+              - Path=/all
+            filters:
+              - PrefixPath=/demo
+              - AddResponseHeader=X-Powered-By,Dan_Vega_YT
+
+          - id: authorize-route
+            uri: http://${BACKEND_URI:localhost}:8080
+            predicates:
+              - Path=/add
+              - Method=POST
+            filters:
+              - PrefixPath=/demo
+              - AddResponseHeader=X-Powered-By,ChatGPT-3.5
+              - AuthorizationGatewayFilter
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: 8081
